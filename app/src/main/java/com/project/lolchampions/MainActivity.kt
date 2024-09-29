@@ -40,7 +40,6 @@ import org.json.JSONArray
 import java.net.HttpURLConnection
 import java.net.URL
 
-// Definir a classe Character
 data class Character(
     val id: String,
     val key: String,
@@ -51,7 +50,6 @@ data class Character(
     val stats: Stats
 )
 
-// Definir a classe Stats para armazenar as estatísticas do personagem
 data class Stats(
     val hp: Int,
     val mp: Int,
@@ -73,7 +71,6 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-// Função que faz a requisição HTTP para buscar personagens
 suspend fun fetchCharacters(): List<Character> {
     return withContext(Dispatchers.IO) {
         val characters = mutableListOf<Character>()
@@ -85,18 +82,16 @@ suspend fun fetchCharacters(): List<Character> {
             val inputStream = urlConnection.inputStream
             val result = inputStream.bufferedReader().use { it.readText() }
 
-            // Parsear a resposta JSON
             val jsonArray = JSONArray(result)
 
             for (i in 0 until jsonArray.length()) {
                 val characterJson = jsonArray.getJSONObject(i)
 
-                // Extraindo dados
                 val id = characterJson.getString("id")
                 val key = characterJson.getString("key")
                 val name = characterJson.getString("name")
                 val title = characterJson.getString("title")
-                val lore = characterJson.getString("description") // Atualizado para pegar a descrição correta
+                val lore = characterJson.getString("description")
                 val tags = characterJson.getJSONArray("tags").let { tagsArray ->
                     List(tagsArray.length()) { index -> tagsArray.getString(index) }
                 }
@@ -120,7 +115,6 @@ suspend fun fetchCharacters(): List<Character> {
     }
 }
 
-// Tela inicial com botão para carregar personagens
 @Composable
 fun MainScreen(onLoadCharactersClick: () -> Unit) {
     Box(
@@ -133,13 +127,11 @@ fun MainScreen(onLoadCharactersClick: () -> Unit) {
     }
 }
 
-// Tela de lista de personagens
 @Composable
 fun CharacterListScreen(onCharacterClick: (Character) -> Unit) {
     val scope = rememberCoroutineScope()
     val characterList = remember { mutableStateOf<List<Character>>(emptyList()) }
 
-    // Carregar personagens quando a tela é iniciada
     LaunchedEffect(Unit) {
         scope.launch {
             val fetchedCharacters = fetchCharacters()
@@ -157,7 +149,6 @@ fun CharacterListScreen(onCharacterClick: (Character) -> Unit) {
     }
 }
 
-// Item da lista de personagens
 @Composable
 fun CharacterListItem(character: Character, onClick: () -> Unit) {
     Card(
@@ -175,7 +166,6 @@ fun CharacterListItem(character: Character, onClick: () -> Unit) {
     }
 }
 
-// Tela de detalhes do personagem
 @Composable
 fun CharacterDetailScreen(character: Character) {
     Column(
@@ -215,7 +205,6 @@ fun CharacterDetailScreen(character: Character) {
     }
 }
 
-// Navegação do aplicativo
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
@@ -228,9 +217,8 @@ fun AppNavigation() {
             })
         }
         composable("characterList") {
-            // Carregar personagens e armazená-los no estado
             LaunchedEffect(Unit) {
-                characterList.value = fetchCharacters() // Atualiza a lista de personagens
+                characterList.value = fetchCharacters()
             }
             CharacterListScreen { character ->
                 navController.navigate("characterDetail/${character.name}")
@@ -241,21 +229,16 @@ fun AppNavigation() {
             arguments = listOf(navArgument("characterName") { type = NavType.StringType })
         ) { backStackEntry ->
             val characterName = backStackEntry.arguments?.getString("characterName")
-
-            // Encontre o personagem usando o estado characterList
             val character = characterList.value.find { it.name == characterName }
 
-            // Se o personagem foi encontrado, exiba a tela de detalhes
             if (character != null) {
                 CharacterDetailScreen(character = character)
             } else {
-                // Se não encontrado, você pode exibir um placeholder ou mensagem
                 Text(text = "Personagem não encontrado.")
             }
         }
     }
 }
-
 
 @Preview(showBackground = true)
 @Composable

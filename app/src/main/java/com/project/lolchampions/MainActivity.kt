@@ -4,6 +4,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,12 +14,14 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
@@ -25,6 +29,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavType
@@ -32,15 +39,16 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import coil.compose.rememberAsyncImagePainter
 import com.project.lolchampions.ui.theme.LOLChampionsTheme
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import java.net.HttpURLConnection
 import java.net.URL
 
-// Definir a classe Character
 data class Character(
     val id: String,
     val key: String,
@@ -48,10 +56,10 @@ data class Character(
     val title: String,
     val lore: String,
     val tags: List<String>,
-    val stats: Stats
+    val stats: Stats,
+    val icon: String
 )
 
-// Definir a classe Stats para armazenar as estatísticas do personagem
 data class Stats(
     val hp: Int,
     val mp: Int,
@@ -73,7 +81,6 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-// Função que faz a requisição HTTP para buscar personagens
 suspend fun fetchCharacters(): List<Character> {
     return withContext(Dispatchers.IO) {
         val characters = mutableListOf<Character>()
@@ -85,18 +92,23 @@ suspend fun fetchCharacters(): List<Character> {
             val inputStream = urlConnection.inputStream
             val result = inputStream.bufferedReader().use { it.readText() }
 
-            // Parsear a resposta JSON
             val jsonArray = JSONArray(result)
 
             for (i in 0 until jsonArray.length()) {
                 val characterJson = jsonArray.getJSONObject(i)
 
-                // Extraindo dados
                 val id = characterJson.getString("id")
                 val key = characterJson.getString("key")
                 val name = characterJson.getString("name")
                 val title = characterJson.getString("title")
-                val lore = characterJson.getString("description") // Atualizado para pegar a descrição correta
+                val lore = characterJson.getString("description")
+
+                val icon = if (characterJson.has("icon") && !characterJson.isNull("icon")) {
+                    characterJson.getString("icon")
+                } else {
+                    ""
+                }
+
                 val tags = characterJson.getJSONArray("tags").let { tagsArray ->
                     List(tagsArray.length()) { index -> tagsArray.getString(index) }
                 }
@@ -110,7 +122,7 @@ suspend fun fetchCharacters(): List<Character> {
                     attackdamage = statsJson.getInt("attackdamage")
                 )
 
-                characters.add(Character(id, key, name, title, lore, tags, stats))
+                characters.add(Character(id, key, name, title, lore, tags, stats, icon))
             }
 
             characters
@@ -120,26 +132,64 @@ suspend fun fetchCharacters(): List<Character> {
     }
 }
 
-// Tela inicial com botão para carregar personagens
+// Nova Composable para a Splash Screen
+
 @Composable
-fun MainScreen(onLoadCharactersClick: () -> Unit) {
+fun SplashScreen(onTimeout: () -> Unit) {
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
-        Button(onClick = onLoadCharactersClick) {
-            Text(text = "Carregar Personagens")
+        Image(
+            painter = rememberAsyncImagePainter(model = R.drawable.splashbg2),
+            contentDescription = "Splash Screen Logo",
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
+        )
+    }
+
+    LaunchedEffect(Unit) {
+        val fetchedCharacters = fetchCharacters()
+        delay(4000)
+        onTimeout()
+    }
+}
+
+@Composable
+fun MainScreen(onLoadCharactersClick: () -> Unit) {
+    Box(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        Image(
+            painter = rememberAsyncImagePainter(model = R.drawable.background),
+            contentDescription = "Imagem de fundo",
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
+        )
+
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.5f))
+        )
+
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Button(onClick = onLoadCharactersClick) {
+                Text(text = "Carregar Personagens")
+            }
         }
     }
 }
 
-// Tela de lista de personagens
 @Composable
 fun CharacterListScreen(onCharacterClick: (Character) -> Unit) {
     val scope = rememberCoroutineScope()
     val characterList = remember { mutableStateOf<List<Character>>(emptyList()) }
+    val searchQuery = remember { mutableStateOf("") }
 
-    // Carregar personagens quando a tela é iniciada
     LaunchedEffect(Unit) {
         scope.launch {
             val fetchedCharacters = fetchCharacters()
@@ -147,17 +197,33 @@ fun CharacterListScreen(onCharacterClick: (Character) -> Unit) {
         }
     }
 
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(vertical = 8.dp)
+    val filteredCharacters = characterList.value.filter { character ->
+        character.name.contains(searchQuery.value, ignoreCase = true)
+    }
+
+    Column(
+        modifier = Modifier.fillMaxSize()
     ) {
-        items(characterList.value) { character ->
-            CharacterListItem(character = character, onClick = { onCharacterClick(character) })
+        TextField(
+            value = searchQuery.value,
+            onValueChange = { searchQuery.value = it },
+            placeholder = { Text("Pesquisar personagem") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        )
+
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(vertical = 8.dp)
+        ) {
+            items(filteredCharacters) { character ->
+                CharacterListItem(character = character, onClick = { onCharacterClick(character) })
+            }
         }
     }
 }
 
-// Item da lista de personagens
 @Composable
 fun CharacterListItem(character: Character, onClick: () -> Unit) {
     Card(
@@ -167,6 +233,18 @@ fun CharacterListItem(character: Character, onClick: () -> Unit) {
             .clickable(onClick = onClick)
     ) {
         Row(modifier = Modifier.padding(16.dp)) {
+            val imageUrl = character.icon.ifEmpty {
+                "https://via.placeholder.com/48"
+            }
+
+            Image(
+                painter = rememberAsyncImagePainter(model = imageUrl),
+                contentDescription = "${character.name} icon",
+                modifier = Modifier
+                    .padding(end = 16.dp)
+                    .size(48.dp)
+            )
+
             Text(
                 text = character.name,
                 style = MaterialTheme.typography.headlineMedium
@@ -175,7 +253,6 @@ fun CharacterListItem(character: Character, onClick: () -> Unit) {
     }
 }
 
-// Tela de detalhes do personagem
 @Composable
 fun CharacterDetailScreen(character: Character) {
     Column(
@@ -183,54 +260,96 @@ fun CharacterDetailScreen(character: Character) {
             .fillMaxSize()
             .padding(16.dp)
     ) {
+        val imageUrl = character.icon.ifEmpty {
+            "https://via.placeholder.com/200"
+        }
+
+        Image(
+            painter = rememberAsyncImagePainter(model = imageUrl),
+            contentDescription = "${character.name} icon",
+            modifier = Modifier
+                .size(200.dp)
+                .align(Alignment.CenterHorizontally)
+                .padding(bottom = 16.dp)
+        )
+
         Text(
-            text = "Nome: ${character.name}",
+            text = character.name,
             style = MaterialTheme.typography.headlineMedium,
-            modifier = Modifier.padding(bottom = 8.dp)
+            modifier = Modifier.padding(bottom = 8.dp),
         )
         Text(
             text = "Título: ${character.title}",
             style = MaterialTheme.typography.headlineSmall,
-            modifier = Modifier.padding(bottom = 8.dp)
+            modifier = Modifier.padding(bottom = 8.dp),
         )
         Text(
             text = "História:",
             style = MaterialTheme.typography.headlineSmall,
-            modifier = Modifier.padding(bottom = 8.dp)
+            modifier = Modifier.padding(bottom = 4.dp),
         )
         Text(
             text = character.lore,
             style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.padding(bottom = 8.dp)
+            modifier = Modifier.padding(bottom = 16.dp),
         )
         Text(
             text = "Tags: ${character.tags.joinToString(", ")}",
             style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.padding(bottom = 8.dp)
+            modifier = Modifier.padding(bottom = 8.dp),
         )
-        Text(
-            text = "HP: ${character.stats.hp}, Armadura: ${character.stats.armor}, Dano de Ataque: ${character.stats.attackdamage}",
-            style = MaterialTheme.typography.bodyMedium
-        )
+
+        Card(
+            modifier = Modifier
+                .padding(top = 16.dp)
+                .shadow(4.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Text(
+                    text = "Estatísticas",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(bottom = 8.dp),
+                )
+                Text(
+                    text = "HP: ${character.stats.hp}",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Text(
+                    text = "Armadura: ${character.stats.armor}",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Text(
+                    text = "Dano de Ataque: ${character.stats.attackdamage}",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+        }
     }
 }
 
-// Navegação do aplicativo
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
     val characterList = remember { mutableStateOf<List<Character>>(emptyList()) }
 
-    NavHost(navController = navController, startDestination = "main") {
+    NavHost(navController = navController, startDestination = "splash") {
+        composable("splash") {
+            SplashScreen {
+                navController.navigate("main") {
+                    popUpTo("splash") { inclusive = true }
+                }
+            }
+        }
         composable("main") {
             MainScreen(onLoadCharactersClick = {
                 navController.navigate("characterList")
             })
         }
         composable("characterList") {
-            // Carregar personagens e armazená-los no estado
             LaunchedEffect(Unit) {
-                characterList.value = fetchCharacters() // Atualiza a lista de personagens
+                characterList.value = fetchCharacters()
             }
             CharacterListScreen { character ->
                 navController.navigate("characterDetail/${character.name}")
@@ -242,24 +361,20 @@ fun AppNavigation() {
         ) { backStackEntry ->
             val characterName = backStackEntry.arguments?.getString("characterName")
 
-            // Encontre o personagem usando o estado characterList
             val character = characterList.value.find { it.name == characterName }
 
-            // Se o personagem foi encontrado, exiba a tela de detalhes
             if (character != null) {
                 CharacterDetailScreen(character = character)
             } else {
-                // Se não encontrado, você pode exibir um placeholder ou mensagem
                 Text(text = "Personagem não encontrado.")
             }
         }
     }
 }
 
-
 @Preview(showBackground = true)
 @Composable
-fun GreetingPreview() {
+fun MainActivityPreview() {
     LOLChampionsTheme {
         MainScreen { }
     }

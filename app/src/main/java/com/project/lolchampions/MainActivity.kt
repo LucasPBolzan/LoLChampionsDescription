@@ -17,6 +17,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
@@ -68,6 +70,132 @@ data class Stats(
     val spellblock: Double,
     val attackdamage: Int
 )
+
+@Composable
+fun FiveXFiveScreen() {
+    val scope = rememberCoroutineScope()
+    val characterList = remember { mutableStateOf<List<Character>>(emptyList()) }
+    val teamOne = remember { mutableStateOf<List<Character>>(emptyList()) }
+    val teamTwo = remember { mutableStateOf<List<Character>>(emptyList()) }
+
+    // Função para gerar novos times
+    fun generateTeams() {
+        scope.launch {
+            val fetchedCharacters = fetchCharacters()
+
+            if (fetchedCharacters.size >= 10) {
+                val shuffledCharacters = fetchedCharacters.shuffled()
+                teamOne.value = shuffledCharacters.take(5)
+                teamTwo.value = shuffledCharacters.takeLast(5)
+            }
+        }
+    }
+
+    // Inicializa os times ao carregar a tela
+    LaunchedEffect(Unit) {
+        generateTeams()
+    }
+
+    val positions = listOf("Topo", "Selva", "Meio", "Atirador", "Suporte")
+
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        item {
+            Button(
+                onClick = { generateTeams() },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp)
+            ) {
+                Text(text = "Recarregar")
+            }
+        }
+
+        item {
+            Text(
+                text = "Time 1",
+                style = MaterialTheme.typography.headlineMedium,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+        }
+        items(teamOne.value.zip(positions)) { (character, position) ->
+            CharacterListItemWithPosition(character = character, position = position)
+        }
+
+        item {
+            Text(
+                text = "Time 2",
+                style = MaterialTheme.typography.headlineMedium,
+                modifier = Modifier.padding(vertical = 16.dp)
+            )
+        }
+        items(teamTwo.value.zip(positions)) { (character, position) ->
+            CharacterListItemWithPosition(character = character, position = position)
+        }
+
+        item {
+            Button(
+                onClick = {
+                    // Funcionalidade de compartilhar será adicionada mais tarde
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp)
+            ) {
+                Text(text = "Compartilhar")
+            }
+        }
+    }
+}
+
+@Composable
+fun CharacterTeamList(team: List<Character>, positions: List<String>) {
+    LazyColumn(
+        modifier = Modifier.fillMaxWidth(),
+        contentPadding = PaddingValues(vertical = 8.dp)
+    ) {
+        items(team.zip(positions)) { (character, position) ->
+            CharacterListItemWithPosition(character = character, position = position)
+        }
+    }
+}
+
+@Composable
+fun CharacterListItemWithPosition(character: Character, position: String) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+    ) {
+        Row(modifier = Modifier.padding(16.dp)) {
+            val imageUrl = character.icon.ifEmpty {
+                "https://via.placeholder.com/48"
+            }
+
+            Image(
+                painter = rememberAsyncImagePainter(model = imageUrl),
+                contentDescription = "${character.name} icon",
+                modifier = Modifier
+                    .padding(end = 16.dp)
+                    .size(48.dp)
+            )
+
+            Column {
+                Text(
+                    text = "$position: ${character.name}",
+                    style = MaterialTheme.typography.headlineSmall
+                )
+                Text(
+                    text = character.title,
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+        }
+    }
+}
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -132,8 +260,6 @@ suspend fun fetchCharacters(): List<Character> {
     }
 }
 
-// Nova Composable para a Splash Screen
-
 @Composable
 fun SplashScreen(onTimeout: () -> Unit) {
     Box(
@@ -156,7 +282,7 @@ fun SplashScreen(onTimeout: () -> Unit) {
 }
 
 @Composable
-fun MainScreen(onLoadCharactersClick: () -> Unit) {
+fun MainScreen(onLoadCharactersClick: () -> Unit, onFiveXFiveClick: () -> Unit) {
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
@@ -177,8 +303,19 @@ fun MainScreen(onLoadCharactersClick: () -> Unit) {
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
-            Button(onClick = onLoadCharactersClick) {
-                Text(text = "Carregar Personagens")
+            Row(
+                modifier = Modifier
+                    .padding(16.dp)
+            ) {
+                Button(onClick = onLoadCharactersClick) {
+                    Text(text = "Carregar Personagens")
+                }
+
+                Box(modifier = Modifier.size(16.dp))
+
+                Button(onClick = onFiveXFiveClick) {
+                    Text(text = "5 X 5")
+                }
             }
         }
     }
@@ -343,9 +480,14 @@ fun AppNavigation() {
             }
         }
         composable("main") {
-            MainScreen(onLoadCharactersClick = {
-                navController.navigate("characterList")
-            })
+            MainScreen(
+                onLoadCharactersClick = {
+                    navController.navigate("characterList")
+                },
+                onFiveXFiveClick = {
+                    navController.navigate("fiveXFive")
+                }
+            )
         }
         composable("characterList") {
             LaunchedEffect(Unit) {
@@ -369,6 +511,9 @@ fun AppNavigation() {
                 Text(text = "Personagem não encontrado.")
             }
         }
+        composable("fiveXFive") {
+            FiveXFiveScreen()
+        }
     }
 }
 
@@ -376,6 +521,9 @@ fun AppNavigation() {
 @Composable
 fun MainActivityPreview() {
     LOLChampionsTheme {
-        MainScreen { }
+        MainScreen(
+            onLoadCharactersClick = {},
+            onFiveXFiveClick = {}
+        )
     }
 }

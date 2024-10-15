@@ -53,7 +53,31 @@ import java.net.URL
 import android.content.Intent
 import androidx.compose.ui.platform.LocalContext
 import android.widget.Toast
+import android.content.Context
+import java.io.File
 
+fun saveTeamsToFile(context: Context, teamOne: List<Character>, teamTwo: List<Character>) {
+    val fileName = "times_5x5.txt"
+    val file = File(context.filesDir, fileName)
+
+    // Convertendo as informações dos times em uma string formatada
+    val teamOneText = teamOne.joinToString(separator = "\n") { character ->
+        "${character.name} - ${character.title}"
+    }
+    val teamTwoText = teamTwo.joinToString(separator = "\n") { character ->
+        "${character.name} - ${character.title}"
+    }
+    val fileContent = """
+        Time 1:
+        $teamOneText
+        
+        Time 2:
+        $teamTwoText
+    """.trimIndent()
+
+    // Salvando no arquivo
+    file.writeText(fileContent)
+}
 
 data class Character(
     val id: String,
@@ -120,6 +144,11 @@ fun FiveXFiveScreen() {
         context.startActivity(Intent.createChooser(intent, "Compartilhar Times 5x5"))
     }
 
+    fun saveTeams() {
+        saveTeamsToFile(context, teamOne.value, teamTwo.value)
+        Toast.makeText(context, "Times 5x5 salvos com sucesso!", Toast.LENGTH_SHORT).show()
+    }
+
     LaunchedEffect(Unit) {
         generateTeams()
     }
@@ -172,6 +201,17 @@ fun FiveXFiveScreen() {
                     .padding(top = 16.dp)
             ) {
                 Text(text = "Compartilhar")
+            }
+        }
+
+        item {
+            Button(
+                onClick = { saveTeams() },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp)
+            ) {
+                Text(text = "Salvar")
             }
         }
     }

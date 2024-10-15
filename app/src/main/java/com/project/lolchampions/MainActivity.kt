@@ -52,6 +52,8 @@ import java.net.HttpURLConnection
 import java.net.URL
 import android.content.Intent
 import androidx.compose.ui.platform.LocalContext
+import android.widget.Toast
+
 
 data class Character(
     val id: String,
@@ -81,7 +83,6 @@ fun FiveXFiveScreen() {
     val teamTwo = remember { mutableStateOf<List<Character>>(emptyList()) }
     val context = LocalContext.current
 
-    // Função para gerar novos times
     fun generateTeams() {
         scope.launch {
             val fetchedCharacters = fetchCharacters()
@@ -90,11 +91,12 @@ fun FiveXFiveScreen() {
                 val shuffledCharacters = fetchedCharacters.shuffled()
                 teamOne.value = shuffledCharacters.take(5)
                 teamTwo.value = shuffledCharacters.takeLast(5)
+
+                Toast.makeText(context, "Times 5x5 gerados com sucesso!", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
-    // Função para compartilhar os times
     fun shareTeams() {
         val teamOneText = teamOne.value.joinToString(separator = "\n") { character ->
             "${character.name} - ${character.title}"
@@ -118,7 +120,6 @@ fun FiveXFiveScreen() {
         context.startActivity(Intent.createChooser(intent, "Compartilhar Times 5x5"))
     }
 
-    // Inicializa os times ao carregar a tela
     LaunchedEffect(Unit) {
         generateTeams()
     }

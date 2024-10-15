@@ -50,6 +50,8 @@ import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import java.net.HttpURLConnection
 import java.net.URL
+import android.content.Intent
+import androidx.compose.ui.platform.LocalContext
 
 data class Character(
     val id: String,
@@ -77,6 +79,7 @@ fun FiveXFiveScreen() {
     val characterList = remember { mutableStateOf<List<Character>>(emptyList()) }
     val teamOne = remember { mutableStateOf<List<Character>>(emptyList()) }
     val teamTwo = remember { mutableStateOf<List<Character>>(emptyList()) }
+    val context = LocalContext.current
 
     // Função para gerar novos times
     fun generateTeams() {
@@ -89,6 +92,30 @@ fun FiveXFiveScreen() {
                 teamTwo.value = shuffledCharacters.takeLast(5)
             }
         }
+    }
+
+    // Função para compartilhar os times
+    fun shareTeams() {
+        val teamOneText = teamOne.value.joinToString(separator = "\n") { character ->
+            "${character.name} - ${character.title}"
+        }
+        val teamTwoText = teamTwo.value.joinToString(separator = "\n") { character ->
+            "${character.name} - ${character.title}"
+        }
+
+        val shareText = """
+            Time 1:
+            $teamOneText
+            
+            Time 2:
+            $teamTwoText
+        """.trimIndent()
+
+        val intent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(Intent.EXTRA_TEXT, shareText)
+        }
+        context.startActivity(Intent.createChooser(intent, "Compartilhar Times 5x5"))
     }
 
     // Inicializa os times ao carregar a tela
@@ -138,9 +165,7 @@ fun FiveXFiveScreen() {
 
         item {
             Button(
-                onClick = {
-                    // Funcionalidade de compartilhar será adicionada mais tarde
-                },
+                onClick = { shareTeams() },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 16.dp)

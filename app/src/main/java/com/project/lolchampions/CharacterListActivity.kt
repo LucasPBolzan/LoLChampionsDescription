@@ -1,5 +1,8 @@
 package com.project.lolchampions
 
+import android.media.MediaPlayer
+import android.content.Context
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -9,12 +12,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 
@@ -23,6 +23,8 @@ fun CharacterListScreen(onCharacterClick: (Character) -> Unit) {
     val scope = rememberCoroutineScope()
     val characterList = remember { mutableStateOf<List<Character>>(emptyList()) }
     val searchQuery = remember { mutableStateOf("") }
+    val context = LocalContext.current
+    var mediaPlayer by remember { mutableStateOf<MediaPlayer?>(null) }
 
     LaunchedEffect(Unit) {
         scope.launch {
@@ -52,8 +54,23 @@ fun CharacterListScreen(onCharacterClick: (Character) -> Unit) {
             contentPadding = PaddingValues(vertical = 8.dp)
         ) {
             items(filteredCharacters) { character ->
-                CharacterListItem(character = character, onClick = { onCharacterClick(character) })
+                CharacterListItem(character = character, onClick = {
+                    // Lógica para parar o áudio anterior, se houver
+                    mediaPlayer?.stop()
+                    mediaPlayer?.release()
+
+                    // Iniciar a reprodução do som do personagem
+                    val audioResId = context.resources.getIdentifier(character.id, "raw", context.packageName)
+                    if (audioResId != 0) {
+                        mediaPlayer = MediaPlayer.create(context, audioResId)
+                        mediaPlayer?.start()
+                    }
+
+                    // Chamar a função de callback quando o personagem for clicado
+                    onCharacterClick(character)
+                })
             }
         }
     }
 }
+

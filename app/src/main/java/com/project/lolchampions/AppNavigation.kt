@@ -35,7 +35,7 @@ fun AppNavigation() {
             )
         }
         composable("characterList") {
-            LaunchedEffect(Unit) {
+            LaunchedEffect(characterList.value.isEmpty()) {
                 characterList.value = fetchCharacters()
             }
             CharacterListScreen { character ->
@@ -47,14 +47,11 @@ fun AppNavigation() {
             arguments = listOf(navArgument("characterName") { type = NavType.StringType })
         ) { backStackEntry ->
             val characterName = backStackEntry.arguments?.getString("characterName")
-
             val character = characterList.value.find { it.name == characterName }
 
-            if (character != null) {
-                CharacterDetailScreen(character = character)
-            } else {
-                Text(text = "Personagem não encontrado.")
-            }
+            character?.let {
+                CharacterDetailScreen(character = it)
+            } ?: Text(text = "Personagem não encontrado.")
         }
         composable("fiveXFive") {
             FiveXFiveActivity()

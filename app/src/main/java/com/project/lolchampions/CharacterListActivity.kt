@@ -55,18 +55,15 @@ fun CharacterListScreen(onCharacterClick: (Character) -> Unit) {
         ) {
             items(filteredCharacters) { character ->
                 CharacterListItem(character = character, onClick = {
-                    // Lógica para parar o áudio anterior, se houver
                     mediaPlayer?.stop()
                     mediaPlayer?.release()
 
-                    // Iniciar a reprodução do som do personagem
                     val audioResId = context.resources.getIdentifier(character.id, "raw", context.packageName)
                     if (audioResId != 0) {
                         mediaPlayer = MediaPlayer.create(context, audioResId)
                         mediaPlayer?.start()
                     }
 
-                    // Chamar a função de callback quando o personagem for clicado
                     onCharacterClick(character)
                 })
             }

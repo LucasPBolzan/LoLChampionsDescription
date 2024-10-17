@@ -8,6 +8,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.widget.Toast
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -127,66 +128,66 @@ fun FiveXFiveActivity() {
 
     val positions = listOf("Topo", "Selva", "Meio", "Atirador", "Suporte")
 
-    LazyColumn(
+    Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        item {
-            Button(
-                onClick = { generateTeams() },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 16.dp)
-            ) {
-                Text(text = "Recarregar")
+        LazyColumn(
+            modifier = Modifier
+                .weight(1f)
+                .padding(bottom = 16.dp)
+        ) {
+            item {
+                Text(
+                    text = "Time 1",
+                    style = MaterialTheme.typography.headlineMedium,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+            }
+
+            items(teamOne.value.zip(positions)) { (character, position) ->
+                CharacterListItemWithPosition(character = character, position = position)
+            }
+
+            item {
+                Text(
+                    text = "Time 2",
+                    style = MaterialTheme.typography.headlineMedium,
+                    modifier = Modifier.padding(vertical = 16.dp)
+                )
+            }
+
+            items(teamTwo.value.zip(positions)) { (character, position) ->
+                CharacterListItemWithPosition(character = character, position = position)
             }
         }
 
-        item {
-            Text(
-                text = "Time 1",
-                style = MaterialTheme.typography.headlineMedium,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
+        Button(
+            onClick = { generateTeams() },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp)
+        ) {
+            Text(text = "Recarregar")
         }
 
-        items(teamOne.value.zip(positions)) { (character, position) ->
-            CharacterListItemWithPosition(character = character, position = position)
+        Button(
+            onClick = { shareTeams(teamOne.value, teamTwo.value, context) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp)
+        ) {
+            Text(text = "Compartilhar")
         }
 
-        item {
-            Text(
-                text = "Time 2",
-                style = MaterialTheme.typography.headlineMedium,
-                modifier = Modifier.padding(vertical = 16.dp)
-            )
-        }
-
-        items(teamTwo.value.zip(positions)) { (character, position) ->
-            CharacterListItemWithPosition(character = character, position = position)
-        }
-
-        item {
-            Button(
-                onClick = { shareTeams(teamOne.value, teamTwo.value, context) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 16.dp)
-            ) {
-                Text(text = "Compartilhar")
-            }
-        }
-
-        item {
-            Button(
-                onClick = { saveTeams(teamOne.value, teamTwo.value) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 16.dp)
-            ) {
-                Text(text = "Salvar")
-            }
+        Button(
+            onClick = { saveTeams(teamOne.value, teamTwo.value) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp)
+        ) {
+            Text(text = "Salvar")
         }
     }
 }

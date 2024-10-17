@@ -1,44 +1,45 @@
-# LOL Champions
+# LOLChampions App
 
-Este aplicativo Android é um catálogo interativo que permite aos usuários visualizar informações detalhadas sobre os campeões do jogo League of Legends. Usando uma combinação de Jetpack Compose para a UI e uma arquitetura de navegação simples, o aplicativo consulta uma API para buscar dados dos campeões e apresenta-os de maneira limpa e funcional.
+Este é um aplicativo Android desenvolvido usando Jetpack Compose. O objetivo deste app é fornecer uma interface simples com opções para carregar personagens do jogo **League of Legends** e uma funcionalidade fictícia para partidas 5x5.
 
-## Características
+## Funcionalidades
 
-- **Interface moderna**: Construído com Jetpack Compose, oferecendo uma experiência fluída e responsiva.
-- **Navegação integrada**: Utiliza a biblioteca de navegação do Compose para transições entre as telas.
-- **Consulta a API**: Busca informações dos campeões de uma API externa e as exibe de forma organizada.
-
-## Instalação
-
-Para executar o projeto, siga estes passos:
-
-1. Clone o repositório para sua máquina local usando:
-2. Abra o projeto no Android Studio.
-3. Sincronize o Gradle e aguarde a conclusão da configuração.
-4. Execute o aplicativo em um emulador ou dispositivo Android.
-
-## Uso
-
-Ao iniciar o aplicativo, você será apresentado a uma tela principal com um botão "Carregar Personagens". Ao clicar neste botão:
-
-- Os dados dos campeões são buscados da API.
-- Uma nova tela com a lista de campeões é exibida.
-- Clicar em um campeão na lista abre uma tela de detalhes, onde mais informações sobre o campeão selecionado são mostradas.
+- **Carregar Personagens**: Um botão que, ao ser clicado, executa a ação de carregar os personagens do jogo.
+- **5 x 5**: Um botão que simula a navegação ou ação de iniciar uma partida fictícia de 5 contra 5.
 
 ## Estrutura do Projeto
 
-A estrutura do código é organizada como segue:
+### `MainActivity`
 
-- `MainActivity`: Configuração inicial do tema e navegação.
-- `Character`: Modelo de dados para os campeões.
-- `fetchCharacters`: Função que realiza a chamada à API e processa os dados recebidos.
-- `MainScreen`, `CharacterListScreen`, `CharacterDetailScreen`: Composables que definem as telas do aplicativo.
-- `AppNavigation`: Gerenciamento da navegação entre as telas do app.
+O ponto de entrada da aplicação, onde:
 
-## Contribuições
+- Habilitamos o modo **Edge-to-Edge** para a interface do usuário.
+- Chamamos o tema `LOLChampionsTheme` para aplicar o estilo visual da aplicação.
+- Inicializamos o conteúdo da tela por meio do método `setContent {}`.
 
-Contribuições são bem-vindas! Para contribuir, por favor abra um pull request com suas sugestões de melhorias ou correções.
+### `MainScreen`
 
-## Licença
+Essa função é o núcleo da interface do usuário e inclui:
 
-Este projeto é distribuído sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
+- **Imagem de Fundo**: Uma imagem de fundo carregada de forma assíncrona via **Coil** (`rememberAsyncImagePainter`).
+- **Sobreposição Semi-transparente**: Uma camada preta semi-transparente sobre a imagem de fundo para melhorar a visibilidade dos elementos.
+- **Botões Interativos**:
+    - `Carregar Personagens`: Executa a ação associada à função `onLoadCharactersClick`.
+    - `5 X 5`: Executa a ação associada à função `onFiveXFiveClick`.
+
+### Prévia
+
+O método `@Preview` é utilizado para exibir uma prévia da interface diretamente no editor.
+
+## Tecnologias Utilizadas
+
+- **Jetpack Compose**: Framework moderno da Google para a construção de interfaces nativas no Android.
+- **Material 3**: Utilizado para estilização de botões e textos.
+- **Coil**: Biblioteca para carregamento de imagens assíncronas.
+- **Kotlin**: Linguagem de programação utilizada para todo o projeto.
+
+## Como Executar o Projeto
+
+1. Clone o repositório:
+   ```bash
+   git clone https://github.com/username/lolchampions.git

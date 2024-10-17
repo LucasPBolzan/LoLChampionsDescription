@@ -7,19 +7,17 @@ fun saveTeamsToFile(context: Context, teamOne: List<Character>, teamTwo: List<Ch
     val fileName = "times_5x5.txt"
     val file = File(context.filesDir, fileName)
 
-    val teamOneText = teamOne.joinToString(separator = "\n") { character ->
-        "${character.name} - ${character.title}"
+    val teamText = buildString {
+        appendLine("Time 1:")
+        teamOne.forEach { character ->
+            appendLine("${character.name} - ${character.title}")
+        }
+        appendLine()
+        appendLine("Time 2:")
+        teamTwo.forEach { character ->
+            appendLine("${character.name} - ${character.title}")
+        }
     }
-    val teamTwoText = teamTwo.joinToString(separator = "\n") { character ->
-        "${character.name} - ${character.title}"
-    }
-    val fileContent = """
-        Time 1:
-        $teamOneText
-        
-        Time 2:
-        $teamTwoText
-    """.trimIndent()
 
-    file.writeText(fileContent)
+    file.writeText(teamText)
 }

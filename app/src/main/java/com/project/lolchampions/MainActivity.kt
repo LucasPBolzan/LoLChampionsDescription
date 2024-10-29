@@ -1,5 +1,6 @@
 package com.project.lolchampions
 
+import android.app.Application
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -25,10 +26,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import com.project.lolchampions.ui.theme.LOLChampionsTheme
+import com.yariksoffice.lingver.Lingver
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Lingver.init(application)
         enableEdgeToEdge()
         setContent {
             LOLChampionsTheme {

@@ -65,7 +65,6 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation ("io.coil-kt:coil-compose:2.1.0")
 
-    // Dependências para Testes
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.0")
     testImplementation(libs.testng)
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.7.0")
@@ -78,4 +77,7 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
+    implementation("com.github.YarikSOffice:lingver:1.3.0")
+
 }

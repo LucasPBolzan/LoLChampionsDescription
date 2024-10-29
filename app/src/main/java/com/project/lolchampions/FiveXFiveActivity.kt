@@ -9,12 +9,16 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.widget.Toast
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -23,6 +27,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
@@ -80,17 +85,23 @@ fun FiveXFiveActivity() {
         scope.launch {
             try {
                 val fetchedCharacters = fetchCharacters()
+                val fetchedItems = fetchItems() // Agora buscamos também os itens
+
                 if (fetchedCharacters.size >= 10) {
                     val shuffledCharacters = fetchedCharacters.shuffled()
-                    teamOne.value = shuffledCharacters.take(5)
-                    teamTwo.value = shuffledCharacters.takeLast(5)
+                    teamOne.value = shuffledCharacters.take(5).map { character ->
+                        character.copy(items = fetchedItems.shuffled().take(3)) // Atribui 3 itens aleatórios
+                    }
+                    teamTwo.value = shuffledCharacters.takeLast(5).map { character ->
+                        character.copy(items = fetchedItems.shuffled().take(3)) // Atribui 3 itens aleatórios
+                    }
                     showNotification(context)
                 } else {
                     Toast.makeText(context, "Não há personagens suficientes para gerar os times.", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
-                Toast.makeText(context, "Erro ao buscar personagens.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Erro ao buscar personagens ou itens.", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -147,7 +158,11 @@ fun FiveXFiveActivity() {
             }
 
             items(teamOne.value.zip(positions)) { (character, position) ->
-                CharacterListItemWithPosition(character = character, position = position)
+                Column(modifier = Modifier.padding(vertical = 8.dp)) {
+                    CharacterListItemWithPosition(character = character, position = position)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    ItemList(items = character.items.take(6)) // Mostra até 6 itens abaixo do personagem
+                }
             }
 
             item {
@@ -159,7 +174,11 @@ fun FiveXFiveActivity() {
             }
 
             items(teamTwo.value.zip(positions)) { (character, position) ->
-                CharacterListItemWithPosition(character = character, position = position)
+                Column(modifier = Modifier.padding(vertical = 8.dp)) {
+                    CharacterListItemWithPosition(character = character, position = position)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    ItemList(items = character.items.take(6)) // Mostra até 6 itens abaixo do personagem
+                }
             }
         }
 
@@ -190,4 +209,13 @@ fun FiveXFiveActivity() {
             Text(text = "Salvar")
         }
     }
+
 }
+
+
+
+
+
+
+
+

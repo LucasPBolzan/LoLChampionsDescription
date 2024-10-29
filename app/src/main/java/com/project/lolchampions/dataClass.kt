@@ -8,7 +8,8 @@ data class Character(
     val lore: String,
     val tags: List<String>,
     val stats: Stats,
-    val icon: String
+    val icon: String,
+    var items: List<Item> = emptyList()
 )
 
 data class Stats(
@@ -18,4 +19,18 @@ data class Stats(
     val armor: Int,
     val spellblock: Double,
     val attackdamage: Int
+)
+
+data class Item(
+    val name: String,
+    val description: String,
+    val price: Price,
+    val purchasable: Boolean,
+    val icon: String
+)
+
+data class Price(
+    val base: Int,
+    val total: Int,
+    val sell: Int
 )

@@ -1,15 +1,12 @@
 package com.project.lolchampions
 
 import ItemList
-import android.app.Activity
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
-import android.os.Build
 import android.widget.Toast
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,25 +14,30 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.core.app.ActivityCompat
-import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
-import androidx.core.content.ContextCompat
 import kotlinx.coroutines.launch
+
 
 @Composable
 fun FiveXFiveActivity() {
@@ -43,7 +45,7 @@ fun FiveXFiveActivity() {
     val teamOne = remember { mutableStateOf<List<Character>>(emptyList()) }
     val teamTwo = remember { mutableStateOf<List<Character>>(emptyList()) }
     val context = LocalContext.current
-
+    var areButtonsVisible by remember { mutableStateOf(false) }
 
     fun generateTeams() {
         scope.launch {
@@ -61,11 +63,16 @@ fun FiveXFiveActivity() {
                     }
                     showNotification(context)
                 } else {
-                    Toast.makeText(context, "Não há personagens suficientes para gerar os times.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        context,
+                        "Não há personagens suficientes para gerar os times.",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
-                Toast.makeText(context, "Erro ao buscar personagens ou itens.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Erro ao buscar personagens ou itens.", Toast.LENGTH_SHORT)
+                    .show()
             }
         }
     }
@@ -110,7 +117,7 @@ fun FiveXFiveActivity() {
     ) {
         LazyColumn(
             modifier = Modifier
-                .weight(1f)
+                .weight(1f) // Ocupa o espaço disponível
                 .padding(bottom = 16.dp)
         ) {
             item {
@@ -140,57 +147,83 @@ fun FiveXFiveActivity() {
             }
         }
 
-        Button(
-            onClick = { generateTeams() },
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 8.dp)
+                .padding(vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
         ) {
-            Text(text = "Recarregar")
+            Text(
+                text = if (areButtonsVisible) "Ocultar opções" else "Mostrar opções",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(end = 8.dp)
+            )
+            IconButton(
+                onClick = { areButtonsVisible = !areButtonsVisible }
+            ) {
+                Icon(
+                    imageVector = if (areButtonsVisible) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                    contentDescription = "Mostrar opções"
+                )
+            }
         }
 
-        Button(
-            onClick = { shareTeams(teamOne.value, teamTwo.value, context) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp)
-        ) {
-            Text(text = "Compartilhar")
-        }
+        if (areButtonsVisible) {
+            Button(
+                onClick = { generateTeams() },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+            ) {
+                Text(text = "Recarregar")
+            }
 
-        Button(
-            onClick = { saveTeams(teamOne.value, teamTwo.value) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp)
-        ) {
-            Text(text = "Salvar")
+            Button(
+                onClick = { shareTeams(teamOne.value, teamTwo.value, context) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+            ) {
+                Text(text = "Compartilhar")
+            }
+
+            Button(
+                onClick = { saveTeams(teamOne.value, teamTwo.value) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+            ) {
+                Text(text = "Salvar")
+            }
         }
     }
 
 
-
-}
-@Composable
-fun CharacterCard(character: Character, position: String) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E)),
-        elevation = CardDefaults.cardElevation(8.dp)
-    ) {
-        Column(
+    }
+    @Composable
+    fun CharacterCard(character: Character, position: String) {
+        Card(
             modifier = Modifier
-                .padding(16.dp)
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E)),
+            elevation = CardDefaults.cardElevation(8.dp)
         ) {
-            CharacterListItemWithPosition(character = character, position = position)
-            Spacer(modifier = Modifier.height(8.dp))
+            Column(
+                modifier = Modifier
+                    .padding(16.dp)
+            ) {
+                CharacterListItemWithPosition(character = character, position = position)
+                Spacer(modifier = Modifier.height(8.dp))
 
-            ItemList(items = character.items.take(6))
+                ItemList(items = character.items.take(6))
+            }
         }
     }
-}
+
+
 
 
 

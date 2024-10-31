@@ -1,6 +1,8 @@
 package com.project.lolchampions
 
 import android.app.Application
+import android.content.Intent
+import android.content.IntentFilter
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -9,6 +11,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -31,6 +34,11 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Lingver.init(application)
+
+        val localeChangeReceiver = LocaleChangeReceiver()
+        val intentFilter = IntentFilter(Intent.ACTION_LOCALE_CHANGED)
+        registerReceiver(localeChangeReceiver, intentFilter)
+
         enableEdgeToEdge()
         setContent {
             LOLChampionsTheme {
@@ -103,12 +111,13 @@ fun ContentButtons(onLoadCharactersClick: () -> Unit, onFiveXFiveClick: () -> Un
                     text = "League of Legends Champions",
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFFFFD700),
+                    color = Color(0xFF0000FF),
                     modifier = Modifier.padding(bottom = 24.dp)
                 )
 
                 Button(
                     onClick = onLoadCharactersClick,
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1E90FF)),
                     modifier = Modifier
                         .fillMaxWidth(0.8f)
                         .height(50.dp)
@@ -122,6 +131,7 @@ fun ContentButtons(onLoadCharactersClick: () -> Unit, onFiveXFiveClick: () -> Un
 
                 Button(
                     onClick = onFiveXFiveClick,
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1E90FF)),
                     modifier = Modifier
                         .fillMaxWidth(0.8f)
                         .height(50.dp)

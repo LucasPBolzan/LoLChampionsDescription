@@ -27,14 +27,13 @@ fun ItemList(items: List<Item>) {
             modifier = Modifier.padding(vertical = 4.dp)
         )
 
-        // Divide os itens em linhas, com altura máxima para não expandir demais
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
                 .heightIn(max = 100.dp),
             contentPadding = PaddingValues(vertical = 8.dp)
         ) {
-            val rows: List<List<Item>> = items.chunked(2) // Divida os itens em grupos de 2 para exibir em linhas
+            val rows: List<List<Item>> = items.chunked(2)
 
             items(rows) { rowItems ->
                 Row(
@@ -42,7 +41,7 @@ fun ItemList(items: List<Item>) {
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     rowItems.forEach { item ->
-                        ItemCard(item = item, modifier = Modifier.weight(1f)) // Aplica o weight corretamente
+                        ItemCard(item = item, modifier = Modifier.weight(1f))
                     }
                 }
             }

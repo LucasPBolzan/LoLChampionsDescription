@@ -1,103 +1,102 @@
+package com.project.lolchampions
+
 import android.content.Context
-import com.project.lolchampions.Character
-import com.project.lolchampions.Item
-import com.project.lolchampions.Price
-import com.project.lolchampions.Stats
-import com.project.lolchampions.saveTeamsToFile
-import org.junit.Assert.assertTrue
-import org.junit.Before
-import org.junit.Test
-import org.mockito.Mockito
+import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.io.TempDir
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import java.io.File
+import java.nio.file.Path
 
 class SaveTeamsToFileTest {
 
-    private lateinit var mockContext: Context
-    private lateinit var filesDir: File
-
-    @Before
-    fun setUp() {
-        mockContext = Mockito.mock(Context::class.java)
-        filesDir = File.createTempFile("tempDir", null).apply { delete(); mkdir() }
-
-        Mockito.`when`(mockContext.filesDir).thenReturn(filesDir)
-    }
-
     @Test
-    fun `test saveTeamsToFile writes correct content`() {
+    fun `test saveTeamsToFile writes correct content to file`(@TempDir tempDir: Path) {
+        // Aqui a gente mocka um contexto do android, sem depender do framework do android
+        val context = mock<Context>()
+        // aqui o junit cria uma especie de pasta temporaria
+        // adicionem logs e facam debugs para entender
+        val filesDir = tempDir.toFile()
+        // configura o filesDir do contexto pra retornar o diretorio temporario
+        whenever(context.filesDir).thenReturn(filesDir)
+
+        // cria a lista do time1
         val teamOne = listOf(
             Character(
                 id = "1",
-                key = "key1",
-                name = "Character1",
-                title = "Title1",
-                lore = "Lore1",
-                tags = listOf("Mage"),
-                stats = Stats(hp = 500, mp = 300, movespeed = 350, armor = 20, spellblock = 30.0, attackdamage = 60),
-                icon = "icon1.png",
-                items = listOf(
-                    Item(name = "Item1", description = "Description1", price = Price(300, 800, 400), purchasable = true, icon = "item1.png")
-                )
+                key = "1",
+                name = "Ashe",
+                title = "the Frost Archer",
+                lore = "",
+                tags = listOf(),
+                stats = Stats(0, 0, 0, 0, 0.0, 0),
+                icon = "",
+                items = emptyList()
             ),
             Character(
                 id = "2",
-                key = "key2",
-                name = "Character2",
-                title = "Title2",
-                lore = "Lore2",
-                tags = listOf("Warrior"),
-                stats = Stats(hp = 600, mp = 200, movespeed = 340, armor = 25, spellblock = 32.0, attackdamage = 70),
-                icon = "icon2.png",
-                items = listOf(
-                    Item(name = "Item2", description = "Description2", price = Price(500, 1000, 600), purchasable = true, icon = "item2.png")
-                )
+                key = "2",
+                name = "Garen",
+                title = "The Might of Demacia",
+                lore = "",
+                tags = listOf(),
+                stats = Stats(0, 0, 0, 0, 0.0, 0),
+                icon = "",
+                items = emptyList()
             )
         )
 
+        // cria a lista do time 2
         val teamTwo = listOf(
             Character(
                 id = "3",
-                key = "key3",
-                name = "Character3",
-                title = "Title3",
-                lore = "Lore3",
-                tags = listOf("Assassin"),
-                stats = Stats(hp = 450, mp = 100, movespeed = 370, armor = 18, spellblock = 28.5, attackdamage = 80),
-                icon = "icon3.png",
-                items = listOf(
-                    Item(name = "Item3", description = "Description3", price = Price(400, 900, 500), purchasable = false, icon = "item3.png")
-                )
+                key = "3",
+                name = "Ahri",
+                title = "the Nine-Tailed Fox",
+                lore = "",
+                tags = listOf(),
+                stats = Stats(0, 0, 0, 0, 0.0, 0),
+                icon = "",
+                items = emptyList()
             ),
             Character(
                 id = "4",
-                key = "key4",
-                name = "Character4",
-                title = "Title4",
-                lore = "Lore4",
-                tags = listOf("Tank"),
-                stats = Stats(hp = 700, mp = 150, movespeed = 300, armor = 30, spellblock = 35.0, attackdamage = 50),
-                icon = "icon4.png",
-                items = listOf(
-                    Item(name = "Item4", description = "Description4", price = Price(600, 1200, 700), purchasable = true, icon = "item4.png")
-                )
+                key = "4",
+                name = "Darius",
+                title = "the Hand of Noxus",
+                lore = "",
+                tags = listOf(),
+                stats = Stats(0, 0, 0, 0, 0.0, 0),
+                icon = "",
+                items = emptyList()
             )
         )
 
-        saveTeamsToFile(mockContext, teamOne, teamTwo)
-
+        // Esse conteúdo é o que "deveria" estar no arquivo, se for diferente, tem algo dando ruim
         val expectedContent = """
             Time 1:
-            Character1 - Title1
-            Character2 - Title2
-            
+            Ashe - the Frost Archer
+            Garen - The Might of Demacia
+
             Time 2:
-            Character3 - Title3
-            Character4 - Title4
+            Ahri - the Nine-Tailed Fox
+            Darius - the Hand of Noxus
         """.trimIndent()
 
-        val savedFile = File(filesDir, "times_5x5.txt")
-        assertTrue(savedFile.exists())
-        val actualContent = savedFile.readText()
-        assertTrue(actualContent.contains(expectedContent))
+        // Chama o método saveTeamsToFile com o contexto mockado e as listas de personagens
+        // @lucas faz um teste, alterando o método lá na classe dele, para ver se o teste vai quebrar
+        saveTeamsToFile(context, teamOne, teamTwo)
+
+        // Asserts
+        // Verificamos se o arquivo foi criado no diretório temporário
+        // Tudo aqui é pra ver se o método fez o que tinha que fazer de forma coerente
+        val file = File(filesDir, "times_5x5.txt")
+        assertTrue(file.exists(), "O arquivo deve ser criado")
+        // Aqui vamos ler o conteudo do arquivo criado
+        val actualContent = file.readText().trim()
+        // Compara o conteudo real do arquivo com o conteudo esperado
+        // Se for diferente vai quebrar
+        assertEquals(expectedContent, actualContent)
     }
 }

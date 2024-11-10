@@ -76,6 +76,9 @@ dependencies {
     testImplementation("com.squareup.okhttp3:mockwebserver:4.9.3")
     testImplementation ("org.robolectric:robolectric:4.8.1")
     testImplementation ("com.squareup.okhttp3:mockwebserver:4.9.3")
+    // https://mvnrepository.com/artifact/org.robolectric/robolectric
+    testImplementation("org.robolectric:robolectric:4.14-beta-1")
+
 
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.0")
 

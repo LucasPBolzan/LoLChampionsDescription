@@ -10,12 +10,12 @@ android {
 
     defaultConfig {
         applicationId = "com.project.lolchampions"
-        minSdk = 34
+        minSdk = 21
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner = "de.mannodermaus.junit5.AndroidJUnit5Builder"
         vectorDrawables {
             useSupportLibrary = true
         }
@@ -31,13 +31,12 @@ android {
         }
     }
 
-
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "11"
     }
     buildFeatures {
         compose = true
@@ -52,7 +51,6 @@ android {
     }
 }
 
-
 dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -63,13 +61,23 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.navigation.compose)
-    implementation ("io.coil-kt:coil-compose:2.1.0")
+    implementation("io.coil-kt:coil-compose:2.1.0")
+    implementation(libs.core)
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.0")
-    testImplementation(libs.testng)
+    testImplementation("org.junit.jupiter:junit-jupiter-params:5.7.0")
+    testImplementation(libs.androidx.ui.test.junit4.android)
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.7.0")
+    testImplementation("org.junit.vintage:junit-vintage-engine:5.7.0")
+
     testImplementation("org.mockito.kotlin:mockito-kotlin:4.0.0")
     testImplementation("org.mockito:mockito-core:4.0.0")
+    testImplementation("org.mockito:mockito-inline:4.0.0")
+    testImplementation("com.squareup.okhttp3:mockwebserver:4.9.3")
+    testImplementation ("org.robolectric:robolectric:4.8.1")
+    testImplementation ("com.squareup.okhttp3:mockwebserver:4.9.3")
+
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.0")
 
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -79,5 +87,4 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
 
     implementation("com.github.YarikSOffice:lingver:1.3.0")
-
 }

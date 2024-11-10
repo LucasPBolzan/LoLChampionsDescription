@@ -6,14 +6,14 @@ import org.json.JSONArray
 import java.net.HttpURLConnection
 import java.net.URL
 
-suspend fun fetchItems(): List<Item> {
+suspend fun fetchItems(baseUrl: String = "http://girardon.com.br:3001"): List<Item> {
     return withContext(Dispatchers.IO) {
         val items = mutableListOf<Item>()
         var page = 1
         val size = 20
 
         while (true) {
-            val url = URL("http://girardon.com.br:3001/items?page=$page&size=$size")
+            val url = URL("$baseUrl/items?page=$page&size=$size")
             val urlConnection = url.openConnection() as HttpURLConnection
             urlConnection.requestMethod = "GET"
 

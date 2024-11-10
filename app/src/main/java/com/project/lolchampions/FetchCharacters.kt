@@ -24,7 +24,7 @@ suspend fun fetchCharacters(): List<Character> {
                 val jsonArray = JSONArray(result)
 
                 if (jsonArray.length() == 0) {
-                    break // No more data
+                    break
                 }
 
                 for (i in 0 until jsonArray.length()) {
@@ -59,10 +59,10 @@ suspend fun fetchCharacters(): List<Character> {
                 }
 
                 if (jsonArray.length() < size) {
-                    break // Reached the last page
+                    break
                 }
 
-                page += 1 // Move to the next page
+                page += 1
             } finally {
                 urlConnection.disconnect()
             }
